@@ -1,0 +1,14 @@
+"""
+    Map translating provider names to provider class
+"""
+
+
+{
+    "provider": {
+        "aws": "AWSProvider",
+        "azure": "AzureProvider",
+        "docker": "DockerProvider",
+        "gce": "GCEProvider",
+        "vagrant": "VagrantProvider"
+    }
+}

@@ -1,0 +1,15 @@
+{
+    "Linux": {
+        "Amazon": "ami-4fffc834",
+        "Suse": "ami-8fac8399",
+        "Ubuntu": "ami-cd0f5cb6",
+        "RHEL": "ami-c998b6b2",
+        "CentOS": "ami-c998b6b2"
+    },
+    "Windows": {
+        "Server 2016": "ami-27a58d5c",
+        "Server 2012 R2": "ami-c6e9d9bd",
+        "Server 2012": "ami-e87d4993",
+        "Server 2008 R2": "ami-cf644fb4"
+    }
+}
