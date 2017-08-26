@@ -17,7 +17,10 @@ setup(
     author='Mayowa Aladeojebi',
     author_email='mayowa.aladeojebi@stelligent.com',
     url='https://github.com/stelligent/usp',
-    license='MIT',
-    packages=find_packages(exclude=('tests', 'docs'))
+    license=license,
+    packages=find_packages(exclude=('docs')),
+    test_suite='nose.collector',
+    tests_require=['nose'],
+    scripts=['bin/usp'],
+    include_package_data=True
 )
-

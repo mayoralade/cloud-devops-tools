@@ -28,23 +28,25 @@ def load_resource_config(resource_name):
     provider = resource_config.get('resource', 'provider')
     config = Namespace()
     for name, value in resource_config.items(provider):
+        if ',' in value:
+            value = [int(i) for i in value.split(',')]
         setattr(config, name, value)
     setattr(config, 'provider', provider)
     return config
 
-def manage_resource(config, action):
+def manage_resource(config, action, log_level):
     '''
     Manage resource by action given
     '''
-    provisioner = Provisioner(config, action)
+    provisioner = Provisioner(config, action, log_level)
     provisioner.run_command_by_provider()
 
-def run_command(name, action):
+def run_command(name, action, log_level):
     '''
     Run requested action
     '''
     config = load_resource_config(name)
-    manage_resource(config, action)
+    manage_resource(config, action, log_level)
 
 def main():
     '''
@@ -54,8 +56,9 @@ def main():
     parser.add_argument('action', choices=['create', 'start', 'login', 'halt', 'destroy', 'status'],
                         help='action required')
     parser.add_argument('name', help='Name of resource to create, matching config file')
+    parser.add_argument('--debug', '-d', action='store_true', help='Set logging level to debug')
     args = parser.parse_args()
-    run_command(args.name, args.action)
+    run_command(args.name, args.action, args.debug)
 
 if __name__ == '__main__':
     main()

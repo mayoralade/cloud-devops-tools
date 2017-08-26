@@ -1,13 +1,14 @@
 {
-    "ImageId": "string",
-    "InstanceId": "string",
+    "ImageId": "",
+    "InstanceId": "",
     "InstanceType": "t1.micro",
-    "KeyName": "string",
+    "KeyName": "",
     "Placement": {
-        "AvailabilityZone": "string"
+        "AvailabilityZone": ""
     },
     "Platform": "Windows",
-    "PublicIpAddress": "string",
+    "PublicIpAddress": "",
+    "SecurityGroups": [],
     "State": {
         "Name": "pending"
     }

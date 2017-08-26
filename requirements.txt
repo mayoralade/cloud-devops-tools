@@ -1,4 +1,3 @@
 boto3
 flatten-dict
 nose
-sphinx

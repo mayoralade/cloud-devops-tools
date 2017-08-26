@@ -48,7 +48,8 @@ class AWSProvider(Provider):
         '''
         Instance start up and login interface
         '''
-        self.logger.log.info('Starting Instance %s', self.instance.Name)
+        self.verify()
+        self.logger.log.info('Starting Instance %s', self.config.name)
         self.interface.start_instance(self.instance.InstanceId)
         self.update_status_file('running')
 
@@ -56,6 +57,7 @@ class AWSProvider(Provider):
         '''
         Instance start up and login interface
         '''
+        self.verify()
         self.logger.log.info('Logging into Instance %s', self.config.name)
         if self.config.platform == 'linux':
             os.system('ssh -i {0} ec2-user@{1}'.format(self.config.key_file_location,
@@ -67,7 +69,8 @@ class AWSProvider(Provider):
         '''
         Instance halt interface
         '''
-        self.logger.log.info('Stopping Instance %s', self.instance.Name)
+        self.verify()
+        self.logger.log.info('Stopping Instance %s', self.config.name)
         self.interface.stop_instance(self.instance.InstanceId)
         self.update_status_file('stopped')
 
@@ -75,8 +78,10 @@ class AWSProvider(Provider):
         '''
         Instance deletion interface
         '''
+        self.verify()
         self.logger.log.info('Destroying Instance %s', self.config.name)
         self.interface.terminate_instance(self.instance.InstanceId)
+        self.interface.delete_security_group(self.instance.SecurityGroups[0]['GroupId'])
         self.update_status_file('terminated')
         Status.clear_status(self.status_file)
 
@@ -84,9 +89,11 @@ class AWSProvider(Provider):
         '''
         Instance Information interface
         '''
-        if instance_id:
+        if not instance_id:
+            self.verify()
+            status = self.interface.instance_status(self.instance.InstanceId)
+        else:
             status = self.interface.instance_status(instance_id)
-        status = self.interface.instance_status(self.instance.InstanceId)
         if repeat:
             self.logger.log.info('%s is %s', self.config.name, status)
         return status
@@ -119,6 +126,14 @@ class AWSProvider(Provider):
             status_data = helper.flatten_dict(status_data)
             self.instance = Namespace()
             self.instance = helper.create_attribute_from_dict(Namespace(), status_data)
+
+    def verify(self):
+        '''
+        Verify Instance exist before running command
+        '''
+        if not self.instance:
+            self.logger.log.error('{0} has not been created'.format(self.config.name))
+            sys.exit(0)
 
     def poll_for_state(self, state, instance_id=None):
         '''

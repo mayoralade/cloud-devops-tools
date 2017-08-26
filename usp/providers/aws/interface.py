@@ -36,7 +36,7 @@ class BotoInterface(object):
                 os.chmod(self.config.key_file_location, 0400)
             self.logger.log.info('Key: %s successfully created', self.config.key_name)
         except botocore.exceptions.ClientError:
-            self.logger.log.info('Key: %s already exists, moving on', self.config.key_name)
+            self.logger.log.warning('Key: %s already exists, moving on', self.config.key_name)
 
     def create_instance(self):#, service_config):
         '''
@@ -45,15 +45,45 @@ class BotoInterface(object):
         self.logger.log.info('Creating EC2 instance, please wait...')
         ami_image = self.get_ami_image()
         self.verify_aws_key()
+        group_id = self.create_security_group()
         instance = self.client.run_instances(ImageId=ami_image,
                                              MinCount=int(self.config.min_count),
                                              MaxCount=int(self.config.max_count),
                                              KeyName=self.config.key_name,
                                              InstanceType=self.config.machine_type,
+                                             SecurityGroupIds=[group_id],
                                              Placement={'AvailabilityZone': self.config.az},
                                              Monitoring={'Enabled': False})#,
                                              #UserData=service_config)
+        self.configure_security_group(group_id)
         return instance['Instances'][0]['InstanceId']
+
+    def create_security_group(self):
+        '''
+        Create New security group for instance
+        '''
+        response = self.client.create_security_group(
+            Description='Default security group for {0}'.format(self.config.name),
+            GroupName='{0}_sg_group'.format(self.config.name)
+        )
+        return response['GroupId']
+
+    def configure_security_group(self, group_id):
+        '''
+        Configure security group for defined ports
+        '''
+        for port in self.config.ports:
+            self.client.authorize_security_group_ingress(GroupId=group_id,
+                                                         IpProtocol="tcp",
+                                                         CidrIp="0.0.0.0/0",
+                                                         FromPort=port,
+                                                         ToPort=port)
+
+    def delete_security_group(self, group_id):
+        '''
+        Delete Security Group Id
+        '''
+        self.client.delete_security_group(GroupId=group_id)
 
     def start_instance(self, instance_id):
         '''
@@ -72,6 +102,10 @@ class BotoInterface(object):
         Stop Instance
         '''
         self.client.terminate_instances(InstanceIds=[instance_id])
+
+    #def clean_up(self, instance):
+        # delete security group
+        # delete
 
     def instance_data(self, instance_id):
         '''

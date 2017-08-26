@@ -16,11 +16,11 @@ class Provisioner(object):
         This takes a provider name and config, verifies and calls
         the backend named provider
     """
-    def __init__(self, config, action):
+    def __init__(self, config, action, log_level):
         self.config = config
         self.action = action
         self.providers = None
-        self.logger = Logger()
+        self.logger = Logger(log_level)
         self.update_providers()
 
     def verify_provider(self):

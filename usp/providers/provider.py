@@ -48,7 +48,7 @@ class Provider(object):
         pass
 
     @abstractmethod
-    def status(self):
+    def status(self, instance_id, repeat):
         '''
         Instance Information interface
         '''
