@@ -5,7 +5,7 @@ import os
 import sys
 import json
 from importlib import import_module
-from .logging.logger import Logger
+from ..logging.logger import Logger
 
 
 class Provisioner(object):
@@ -20,7 +20,7 @@ class Provisioner(object):
         self.config = config
         self.action = action
         self.providers = None
-        self.log = Logger()
+        self.logger = Logger()
         self.update_providers()
 
     def verify_provider(self):
@@ -28,7 +28,7 @@ class Provisioner(object):
             Verify the given provider is supported
         """
         if self.config.provider not in self.providers:
-            self.log.error('Provider: %s not currently supported', self.config.provider)
+            self.logger.log.error('Provider: %s not currently supported', self.config.provider)
             sys.exit(1)
 
     def run_command_by_provider(self):
@@ -37,12 +37,11 @@ class Provisioner(object):
         """
         self.verify_provider()
         provider_name = self.providers[self.config.provider]
-        module_name = '.{0}.{1}.{2}'.format(self.config.provider,
-                                            provider_name.lower(),
-                                            provider_name)
+        module_name = '..{0}.{1}'.format(self.config.provider,
+                                         provider_name.lower())
         module = import_module(module_name, __name__)
         provider = getattr(module, self.providers[self.config.provider])
-        provider = provider(self.config)
+        provider = provider(self.config, self.logger)
         action = getattr(provider, self.action)
         action()
 

@@ -15,7 +15,7 @@ class Status(object):
         Create new status file
         '''
         with open(status_file, 'w') as status_f:
-            status_f.write(status)
+            json.dump(status, status_f)
 
     @staticmethod
     def read_status(status_file):

@@ -21,7 +21,7 @@ class AMIMap(object):
         '''
         Define Mappings
         '''
-        with open(self.ami_map) as ami_data:
+        with open(self.ami_file) as ami_data:
             mappings = json.load(ami_data)
         return mappings
 

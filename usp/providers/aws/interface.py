@@ -4,19 +4,18 @@
 import os
 import boto3
 import botocore.exceptions
-from ..resources.ami_map import AMIMap
-from ....logging.logger import Logger
+from .resources.ami_map import AMIMap
 
 
 class BotoInterface(object):
     '''
         Boto3 Interface to decouple AWSProvider from Python SDK
     '''
-    def __init__(self, config):
+    def __init__(self, config, logger):
         self.config = config
         self.client = None
         self.create_client()
-        self.log = Logger()
+        self.logger = logger
 
     def create_client(self):
         '''
@@ -35,37 +34,26 @@ class BotoInterface(object):
             with open(self.config.key_file_location, 'w') as kpfile:
                 kpfile.write(key_pair['KeyMaterial'])
                 os.chmod(self.config.key_file_location, 0400)
-            self.log.info('Key: %s successfully created', self.config.key_name)
+            self.logger.log.info('Key: %s successfully created', self.config.key_name)
         except botocore.exceptions.ClientError:
-            self.log.info('Key: %s already exists, moving on', self.config.key_name)
+            self.logger.log.info('Key: %s already exists, moving on', self.config.key_name)
 
     def create_instance(self):#, service_config):
         '''
         Create an EC2 instance
         '''
-        self.log.info('Creating EC2 instance, please wait...')
+        self.logger.log.info('Creating EC2 instance, please wait...')
         ami_image = self.get_ami_image()
         self.verify_aws_key()
         instance = self.client.run_instances(ImageId=ami_image,
-                                             MinCount=self.config.min_count,
-                                             MaxCount=self.config.max_count,
+                                             MinCount=int(self.config.min_count),
+                                             MaxCount=int(self.config.max_count),
                                              KeyName=self.config.key_name,
                                              InstanceType=self.config.machine_type,
                                              Placement={'AvailabilityZone': self.config.az},
                                              Monitoring={'Enabled': False})#,
                                              #UserData=service_config)
-        self.configure_security_group()
         return instance['Instances'][0]['InstanceId']
-
-    def configure_security_group(self):
-        '''
-        Configure instance security group
-        '''
-        # Future update, enable fine turning to port and protocol level
-        self.client.authorize_security_group_ingress(
-            FromPort=-1,
-            IpProtocol=-1,
-            ToPort=-1)
 
     def start_instance(self, instance_id):
         '''
@@ -85,12 +73,19 @@ class BotoInterface(object):
         '''
         self.client.terminate_instances(InstanceIds=[instance_id])
 
-    def instance_status(self, instance_id):
+    def instance_data(self, instance_id):
         '''
         Get the statue of an instance
         '''
         instance_state = self.client.describe_instances(InstanceIds=[instance_id])
-        return instance_state['InstanceStatuses'][0]['InstanceState']['Name']
+        return instance_state['Reservations'][0]['Instances'][0]
+
+    def instance_status(self, instance_id):
+        '''
+        Get the statue of an instance
+        '''
+        instance_state = self.instance_data(instance_id)
+        return instance_state['State']['Name']
 
     def get_ami_image(self):
         '''
