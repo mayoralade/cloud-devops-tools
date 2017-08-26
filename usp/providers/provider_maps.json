@@ -4,11 +4,9 @@
 
 
 {
-    "provider": {
-        "aws": "AWSProvider",
-        "azure": "AzureProvider",
-        "docker": "DockerProvider",
-        "gce": "GCEProvider",
-        "vagrant": "VagrantProvider"
-    }
+    "aws": "AWSProvider",
+    "azure": "AzureProvider",
+    "docker": "DockerProvider",
+    "gce": "GCEProvider",
+    "vagrant": "VagrantProvider"
 }

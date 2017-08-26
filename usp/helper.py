@@ -2,7 +2,9 @@
 Library of Helper functions
 '''
 import sys
+import ConfigParser
 from flatten_dict import flatten
+
 
 def underscore_reducer(key1, key2):
     '''
@@ -33,3 +35,11 @@ def flatten_dict(given_dict):
     flatten dict
     '''
     return flatten(given_dict, reducer=underscore_reducer)
+
+def load_config_file(config_file_path):
+    '''
+    Load program config file
+    '''
+    config = ConfigParser.RawConfigParser()
+    config.read(config_file_path)
+    return config

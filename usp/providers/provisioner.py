@@ -1,6 +1,12 @@
 """
 Main Provisioner class to manage all providers
 """
+import os
+import sys
+import json
+from importlib import import_module
+from .logging.logger import Logger
+
 
 class Provisioner(object):
     """
@@ -10,24 +16,41 @@ class Provisioner(object):
         This takes a provider name and config, verifies and calls
         the backend named provider
     """
-    def __init__(self, provider, config):
-        self.provider = provider
+    def __init__(self, config, action):
         self.config = config
+        self.action = action
+        self.providers = None
+        self.log = Logger()
+        self.update_providers()
 
     def verify_provider(self):
         """
             Verify the given provider is supported
         """
-        pass
+        if self.config.provider not in self.providers:
+            self.log.error('Provider: %s not currently supported', self.config.provider)
+            sys.exit(1)
 
-    def verify_config(self):
-        """
-            Verify the config syntax
-        """
-        pass
-
-    def call_provider(self):
+    def run_command_by_provider(self):
         """
             call the provider given with config provided
         """
-        pass
+        self.verify_provider()
+        provider_name = self.providers[self.config.provider]
+        module_name = '.{0}.{1}.{2}'.format(self.config.provider,
+                                            provider_name.lower(),
+                                            provider_name)
+        module = import_module(module_name, __name__)
+        provider = getattr(module, self.providers[self.config.provider])
+        provider = provider(self.config)
+        action = getattr(provider, self.action)
+        action()
+
+    def update_providers(self):
+        '''
+        Load Provider Map
+        '''
+        provider_map_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                         'provider_maps.json')
+        with open(provider_map_file) as pmfile:
+            self.providers = json.load(pmfile)

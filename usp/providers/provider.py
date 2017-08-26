@@ -10,45 +10,45 @@ class Provider(object):
     '''
     __metaclass__ = ABCMeta
     def __init__(self):
-        self.status = None
+        self.config = None
 
     @abstractmethod
-    def create_instance(self):
+    def create(self):
         '''
         Instance creation interface
         '''
         pass
 
     @abstractmethod
-    def start_instance(self):
+    def start(self):
         '''
         Instance start up and login interface
         '''
         pass
 
     @abstractmethod
-    def enter_instance(self):
+    def login(self):
         '''
-        Instance start up and login interface
+        Instance login interface
         '''
         pass
 
     @abstractmethod
-    def halt_instance(self):
+    def halt(self):
         '''
         Instance halt interface
         '''
         pass
 
     @abstractmethod
-    def destroy_instance(self):
+    def destroy(self):
         '''
         Instance deletion interface
         '''
         pass
 
     @abstractmethod
-    def instance_status(self):
+    def status(self):
         '''
         Instance Information interface
         '''

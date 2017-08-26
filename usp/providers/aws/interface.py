@@ -39,7 +39,7 @@ class BotoInterface(object):
         except botocore.exceptions.ClientError:
             self.log.info('Key: %s already exists, moving on', self.config.key_name)
 
-    def create_instance(self, service_config):
+    def create_instance(self):#, service_config):
         '''
         Create an EC2 instance
         '''
@@ -52,8 +52,8 @@ class BotoInterface(object):
                                              KeyName=self.config.key_name,
                                              InstanceType=self.config.machine_type,
                                              Placement={'AvailabilityZone': self.config.az},
-                                             Monitoring={'Enabled': False},
-                                             UserData=service_config)
+                                             Monitoring={'Enabled': False})#,
+                                             #UserData=service_config)
         self.configure_security_group()
         return instance['Instances'][0]['InstanceId']
 
