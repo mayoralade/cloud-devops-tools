@@ -21,35 +21,35 @@ class AWSProvider(Provider):
     '''
         AWS Provider
     '''
-    def __init__(self, config, logger):
+    def __init__(self, name, config, logger):
         super(AWSProvider, self).__init__()
+        self.name = name
         self.instance = None
         self.config = AWSProvider.update_configuration(config)
         self.logger = logger
         #service holder
-        self.interface = BotoInterface(self.config, self.logger)
-        self.status_file = helper.construct_status_file_name(self.config.platform, self.config.name)
+        self.interface = BotoInterface(self.name, self.config, self.logger)
+        self.status_file = helper.construct_status_file_name(self.config.platform, self.name)
         self.update()
 
     def create(self):
         '''
         Instance creation interface
         '''
-        self.logger.log.info('Creating Instance %s', self.config.name)
+        self.logger.log.info('Creating Instance %s', self.name)
         #service_config = self.service_configuration()
         instance_id = self.interface.create_instance()#service_config)
         self.poll_for_state('running', instance_id)
         instance_data = self.interface.instance_data(instance_id)
-        self.instance = Instance(instance_data, self.config.attribute_file, self.config.name)
+        self.instance = Instance(instance_data, self.config.attribute_file, self.name)
         Status.create_status(self.instance.info, self.status_file)
-        self.update_status_file('running')
 
     def start(self):
         '''
         Instance start up and login interface
         '''
         self.verify()
-        self.logger.log.info('Starting Instance %s', self.config.name)
+        self.logger.log.info('Starting Instance %s', self.name)
         self.interface.start_instance(self.instance.InstanceId)
         self.update_status_file('running')
 
@@ -58,10 +58,11 @@ class AWSProvider(Provider):
         Instance start up and login interface
         '''
         self.verify()
-        self.logger.log.info('Logging into Instance %s', self.config.name)
+        self.logger.log.info('Logging into Instance %s', self.name)
         if self.config.platform == 'linux':
-            os.system('ssh -i {0} ec2-user@{1}'.format(self.config.key_file_location,
-                                                       self.instance.PublicIpAddress))
+            os.system('ssh -o "StrictHostKeyChecking no" -i {0} ec2-user@{1}'.format(
+                self.config.key_file_location,
+                self.instance.PublicIpAddress))
         else:
             self.logger.log.error('Only Linux has been implemented for AWS')
 
@@ -70,7 +71,7 @@ class AWSProvider(Provider):
         Instance halt interface
         '''
         self.verify()
-        self.logger.log.info('Stopping Instance %s', self.config.name)
+        self.logger.log.info('Stopping Instance %s', self.name)
         self.interface.stop_instance(self.instance.InstanceId)
         self.update_status_file('stopped')
 
@@ -79,10 +80,10 @@ class AWSProvider(Provider):
         Instance deletion interface
         '''
         self.verify()
-        self.logger.log.info('Destroying Instance %s', self.config.name)
+        self.logger.log.info('Destroying Instance %s', self.name)
         self.interface.terminate_instance(self.instance.InstanceId)
-        self.interface.delete_security_group(self.instance.SecurityGroups[0]['GroupId'])
         self.update_status_file('terminated')
+        self.interface.delete_security_group(self.instance.SecurityGroups[0]['GroupId'])
         Status.clear_status(self.status_file)
 
     def status(self, instance_id=None, repeat=True):
@@ -95,7 +96,7 @@ class AWSProvider(Provider):
         else:
             status = self.interface.instance_status(instance_id)
         if repeat:
-            self.logger.log.info('%s is %s', self.config.name, status)
+            self.logger.log.info('%s is %s', self.name, status)
         return status
 
     @staticmethod
@@ -132,7 +133,7 @@ class AWSProvider(Provider):
         Verify Instance exist before running command
         '''
         if not self.instance:
-            self.logger.log.error('{0} has not been created'.format(self.config.name))
+            self.logger.log.error('{0} has not been created'.format(self.name))
             sys.exit(0)
 
     def poll_for_state(self, state, instance_id=None):

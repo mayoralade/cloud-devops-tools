@@ -16,7 +16,8 @@ class Provisioner(object):
         This takes a provider name and config, verifies and calls
         the backend named provider
     """
-    def __init__(self, config, action, log_level):
+    def __init__(self, name, config, action, log_level):
+        self.name = name
         self.config = config
         self.action = action
         self.providers = None
@@ -41,7 +42,7 @@ class Provisioner(object):
                                          provider_name.lower())
         module = import_module(module_name, __name__)
         provider = getattr(module, self.providers[self.config.provider])
-        provider = provider(self.config, self.logger)
+        provider = provider(self.name, self.config, self.logger)
         action = getattr(provider, self.action)
         action()
 

@@ -11,7 +11,8 @@ class BotoInterface(object):
     '''
         Boto3 Interface to decouple AWSProvider from Python SDK
     '''
-    def __init__(self, config, logger):
+    def __init__(self, name, config, logger):
+        self.name = name
         self.config = config
         self.client = None
         self.create_client()
@@ -63,8 +64,8 @@ class BotoInterface(object):
         Create New security group for instance
         '''
         response = self.client.create_security_group(
-            Description='Default security group for {0}'.format(self.config.name),
-            GroupName='{0}_sg_group'.format(self.config.name)
+            Description='Default security group for {0}'.format(self.name),
+            GroupName='{0}_sg_group'.format(self.name)
         )
         return response['GroupId']
 

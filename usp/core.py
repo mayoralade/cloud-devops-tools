@@ -3,28 +3,61 @@ Main USP Interface
 '''
 #from .options import CommandlineOptions
 import os
+import sys
+from shutil import copy2
 from argparse import Namespace, ArgumentParser
 from . import helper
 from .providers.provisioner import Provisioner
 
 
-def load_system_config():
+def construct_config_path(config_path, config_name):
     '''
-    Load system configutation file
+    Construct config file path from path and config name
     '''
-    sys_config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                   'usp.cfg')
-    sys_config = helper.load_config_file(sys_config_path)
-    return sys_config
+    os.path.join(config_path, config_name)
+    return '{0}.cfg'.format(os.path.join(config_path, config_name))
 
-def load_resource_config(resource_name):
+def copy_config_template(resource_path):
     '''
-    Load resource configuration file
+    Copy config file template to user home directory
     '''
-    sys_config = load_system_config()
-    resource_config_path = sys_config.get('defaults', 'machine_config_dir')
-    resource_config = helper.load_config_file('{0}{1}.cfg'.format(resource_config_path,
-                                                                  resource_name))
+    template_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                 'sample/sample_configuration.cfg')
+    user_template_file = os.path.join(resource_path, 'sample_configuration.cfg')
+    if os.path.isfile(user_template_file):
+        msg = '''
+        Create a default configuration file to use <usp_default.cfg> for instances
+        without any configuration file. <sample_configuration.cfg> already exists in
+        your home directory.
+        '''
+        sys.exit('ERROR: {0}'.format(msg))
+    copy2(template_file, resource_path)
+
+def load_config_files(given_config, default_config):
+    '''
+    Load config files to be used to provision instance
+    '''
+    resource_path = os.path.expanduser('~')
+    default_cfg_file = construct_config_path(resource_path, default_config)
+    given_cfg_file = construct_config_path(resource_path, given_config)
+    if os.path.isfile(given_cfg_file):
+        return given_cfg_file
+    elif os.path.isfile(default_cfg_file):
+        return default_cfg_file
+    else:
+        msg = ''''A default template file <sample_configuration.cfg> has been
+        created in your home dir, please modify this file, rename it to
+        <usp_default.cfg> and all other instances not having a config file tied to
+        it will use the provider specified under the [resource] section'''
+        copy_config_template(resource_path)
+        sys.exit('ERROR: {0}'.format(msg))
+
+def define_config_attributes(resource_name):
+    '''
+    Define resource configuration attributes
+    '''
+    config_file = load_config_files(resource_name, 'usp_default')
+    resource_config = helper.load_config_file(config_file)
     provider = resource_config.get('resource', 'provider')
     config = Namespace()
     for name, value in resource_config.items(provider):
@@ -34,19 +67,19 @@ def load_resource_config(resource_name):
     setattr(config, 'provider', provider)
     return config
 
-def manage_resource(config, action, log_level):
+def manage_resource(name, config, action, log_level):
     '''
     Manage resource by action given
     '''
-    provisioner = Provisioner(config, action, log_level)
+    provisioner = Provisioner(name, config, action, log_level)
     provisioner.run_command_by_provider()
 
 def run_command(name, action, log_level):
     '''
     Run requested action
     '''
-    config = load_resource_config(name)
-    manage_resource(config, action, log_level)
+    config = define_config_attributes(name)
+    manage_resource(name, config, action, log_level)
 
 def main():
     '''
@@ -56,7 +89,7 @@ def main():
     parser.add_argument('action', choices=['create', 'start', 'login', 'halt', 'destroy', 'status'],
                         help='action required')
     parser.add_argument('name', help='Name of resource to create, matching config file')
-    parser.add_argument('--debug', '-d', action='store_true', help='Set logging level to debug')
+    parser.add_argument('--debug', '-d', '-D', action='store_true', help='Set log level to debug')
     args = parser.parse_args()
     run_command(args.name, args.action, args.debug)
 
