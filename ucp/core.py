@@ -26,7 +26,7 @@ def copy_config_template(resource_path):
     user_template_file = os.path.join(resource_path, 'sample_configuration.cfg')
     if os.path.isfile(user_template_file):
         msg = '''
-        Create a default configuration file to use <usp_default.cfg> for instances
+        Create a default configuration file to use <ucp_default.cfg> for instances
         without any configuration file. <sample_configuration.cfg> already exists in
         your home directory.
         '''
@@ -47,7 +47,7 @@ def load_config_files(given_config, default_config):
     else:
         msg = ''''A default template file <sample_configuration.cfg> has been
         created in your home dir, please modify this file, rename it to
-        <usp_default.cfg> and all other instances not having a config file tied to
+        <ucp_default.cfg> and all other instances not having a config file tied to
         it will use the provider specified under the [resource] section'''
         copy_config_template(resource_path)
         sys.exit('ERROR: {0}'.format(msg))
@@ -56,7 +56,7 @@ def define_config_attributes(resource_name):
     '''
     Define resource configuration attributes
     '''
-    config_file = load_config_files(resource_name, 'usp_default')
+    config_file = load_config_files(resource_name, 'ucp_default')
     resource_config = helper.load_config_file(config_file)
     provider = resource_config.get('resource', 'provider')
     config = Namespace()
@@ -85,7 +85,7 @@ def main():
     '''
     Main Program
     '''
-    parser = ArgumentParser(prog='usp', usage='%(prog)s <action> <name>')
+    parser = ArgumentParser(prog='ucp', usage='%(prog)s <action> <name>')
     parser.add_argument('action', choices=['create', 'start', 'login', 'halt', 'destroy', 'status'],
                         help='action required')
     parser.add_argument('name', help='Name of resource to create, matching config file')

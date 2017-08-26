@@ -1,2 +1,2 @@
-# usp
-Unified Service Provider
+# ucp
+Unified Cloud Provider

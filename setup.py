@@ -10,17 +10,17 @@ with open('LICENSE') as f:
     license = f.read()
 
 setup(
-    name='usp',
+    name='ucp',
     version='0.1.0',
-    description='Univeral Service Provider',
+    description='Unified Cloud Provider',
     long_description=readme,
     author='Mayowa Aladeojebi',
     author_email='mayowa.aladeojebi@stelligent.com',
-    url='https://github.com/stelligent/usp',
+    url='https://github.com/stelligent/ucp',
     license=license,
     packages=find_packages(exclude=('docs')),
     test_suite='nose.collector',
     tests_require=['nose'],
-    scripts=['bin/usp'],
+    scripts=['bin/ucp'],
     include_package_data=True
 )
