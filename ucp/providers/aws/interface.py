@@ -46,6 +46,7 @@ class BotoInterface(object):
         self.logger.log.info('Creating EC2 instance, please wait...')
         ami_image = self.get_ami_image()
         self.verify_aws_key()
+        config_manager = self.get_service_config()
         group_id = self.create_security_group()
         instance = self.client.run_instances(ImageId=ami_image,
                                              MinCount=int(self.config.min_count),
@@ -54,8 +55,8 @@ class BotoInterface(object):
                                              InstanceType=self.config.machine_type,
                                              SecurityGroupIds=[group_id],
                                              Placement={'AvailabilityZone': self.config.az},
-                                             Monitoring={'Enabled': False})#,
-                                             #UserData=service_config)
+                                             Monitoring={'Enabled': False},
+                                             UserData=config_manager)
         self.configure_security_group(group_id)
         return instance['Instances'][0]['InstanceId']
 
@@ -104,10 +105,6 @@ class BotoInterface(object):
         '''
         self.client.terminate_instances(InstanceIds=[instance_id])
 
-    #def clean_up(self, instance):
-        # delete security group
-        # delete
-
     def instance_data(self, instance_id):
         '''
         Get the statue of an instance
@@ -130,3 +127,25 @@ class BotoInterface(object):
                                 self.config.ami_file)
         ami_map = AMIMap(self.config.platform, self.config.os_name, ami_file)
         return ami_map.get_ami_image()
+
+    def login_to_machine(self, ip_address):
+        '''
+        Enable ssh or rdp to instance
+        '''
+        if self.config.platform == 'linux':
+            os.system('ssh -o "StrictHostKeyChecking no" -i {0} ec2-user@{1}'.format(
+                self.config.key_file_location,
+                ip_address))
+        else:
+            self.logger.log.error('Only Linux has been implemented for AWS')
+
+    def get_service_config(self):
+        '''
+        Get the services to be configured on machine
+        and pass as userdata for amazon instance creation
+        '''
+        config_manager = getattr(self.config, self.config.platform)
+        service_list = ' '.join(self.config.services)
+        config_manager = config_manager.replace('service_config_list',
+                                                service_list)
+        return config_manager

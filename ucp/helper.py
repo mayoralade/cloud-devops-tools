@@ -43,3 +43,15 @@ def load_config_file(config_file_path):
     config = ConfigParser.RawConfigParser()
     config.read(config_file_path)
     return config
+
+def configure_section_attributes(sections, config_data, config):
+    '''
+    Read config file, generate configuration attributes from
+    sections passed to function
+    '''
+    for section in sections:
+        for name, value in config_data.items(section):
+            if ',' in value:
+                value = [int(i) for i in value.split(',')]
+            setattr(config, name, value)
+    return config

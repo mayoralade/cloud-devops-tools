@@ -11,7 +11,6 @@ from .interface import BotoInterface
 from .instance import Instance
 from ... import helper
 from ...status import Status
-#Import service provider
 
 TIMEOUT = 60
 INTERVAL = 5
@@ -27,7 +26,6 @@ class AWSProvider(Provider):
         self.instance = None
         self.config = AWSProvider.update_configuration(config)
         self.logger = logger
-        #service holder
         self.interface = BotoInterface(self.name, self.config, self.logger)
         self.status_file = helper.construct_status_file_name(self.config.platform, self.name)
         self.update()
@@ -37,8 +35,7 @@ class AWSProvider(Provider):
         Instance creation interface
         '''
         self.logger.log.info('Creating Instance %s', self.name)
-        #service_config = self.service_configuration()
-        instance_id = self.interface.create_instance()#service_config)
+        instance_id = self.interface.create_instance()
         self.poll_for_state('running', instance_id)
         instance_data = self.interface.instance_data(instance_id)
         self.instance = Instance(instance_data, self.config.attribute_file, self.name)
@@ -59,12 +56,7 @@ class AWSProvider(Provider):
         '''
         self.verify()
         self.logger.log.info('Logging into Instance %s', self.name)
-        if self.config.platform == 'linux':
-            os.system('ssh -o "StrictHostKeyChecking no" -i {0} ec2-user@{1}'.format(
-                self.config.key_file_location,
-                self.instance.PublicIpAddress))
-        else:
-            self.logger.log.error('Only Linux has been implemented for AWS')
+        self.instance.login_to_machine(self.instance.PublicIpAddress)
 
     def halt(self):
         '''
@@ -107,9 +99,7 @@ class AWSProvider(Provider):
         provider_config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                             'machine.cfg')
         provider_config = helper.load_config_file(provider_config_path)
-        for name, value in provider_config.items('default'):
-            setattr(config, name, value)
-        return config
+        return helper.configure_section_attributes(['default'], provider_config, config)
 
     def service_configuration(self):
         '''
@@ -146,7 +136,7 @@ class AWSProvider(Provider):
         while current_state != state:
             current_state = self.status(instance_id, repeat=False)
             if sleep_time >= TIMEOUT:
-                sys.exit('Instance is taking too long to reach %s state, exiting...', state)
+                sys.exit('Instance is taking too long to reach {0} state, exiting...'.format(state))
             sleep(INTERVAL)
             sleep_time += INTERVAL
         self.logger.log.info('Instance is now %s', state)

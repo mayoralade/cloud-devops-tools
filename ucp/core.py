@@ -57,15 +57,11 @@ def define_config_attributes(resource_name):
     Define resource configuration attributes
     '''
     config_file = load_config_files(resource_name, 'ucp_default')
-    resource_config = helper.load_config_file(config_file)
-    provider = resource_config.get('resource', 'provider')
-    config = Namespace()
-    for name, value in resource_config.items(provider):
-        if ',' in value:
-            value = [int(i) for i in value.split(',')]
-        setattr(config, name, value)
-    setattr(config, 'provider', provider)
-    return config
+    config_data = helper.load_config_file(config_file)
+    provider = config_data.get('resource', 'provider')
+    return helper.configure_section_attributes(['resource', provider, 'services'],
+                                               config_data,
+                                               Namespace())
 
 def manage_resource(name, config, action, log_level):
     '''
