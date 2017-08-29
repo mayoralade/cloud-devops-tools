@@ -78,8 +78,8 @@ class BotoInterface(object):
             self.client.authorize_security_group_ingress(GroupId=group_id,
                                                          IpProtocol="tcp",
                                                          CidrIp="0.0.0.0/0",
-                                                         FromPort=port,
-                                                         ToPort=port)
+                                                         FromPort=int(port),
+                                                         ToPort=int(port))
 
     def delete_security_group(self, group_id):
         '''

@@ -56,7 +56,7 @@ class AWSProvider(Provider):
         '''
         self.verify()
         self.logger.log.info('Logging into Instance %s', self.name)
-        self.instance.login_to_machine(self.instance.PublicIpAddress)
+        self.interface.login_to_machine(self.instance.PublicIpAddress)
 
     def halt(self):
         '''

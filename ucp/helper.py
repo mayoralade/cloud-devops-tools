@@ -52,6 +52,6 @@ def configure_section_attributes(sections, config_data, config):
     for section in sections:
         for name, value in config_data.items(section):
             if ',' in value:
-                value = [int(i) for i in value.split(',')]
+                value = value.split(',')
             setattr(config, name, value)
     return config
