@@ -47,35 +47,42 @@ class BotoInterface(object):
         ami_image = self.get_ami_image()
         self.verify_aws_key()
         config_manager = self.get_service_config()
-        group_id = self.create_security_group()
+        sec_group_name = '{0}_sg_group'.format(self.name)
+        sg_exists = self.create_security_group(sec_group_name)
         instance = self.client.run_instances(ImageId=ami_image,
                                              MinCount=int(self.config.min_count),
                                              MaxCount=int(self.config.max_count),
                                              KeyName=self.config.key_name,
                                              InstanceType=self.config.machine_type,
-                                             SecurityGroupIds=[group_id],
+                                             SecurityGroups=[sec_group_name],
                                              Placement={'AvailabilityZone': self.config.az},
                                              Monitoring={'Enabled': False},
                                              UserData=config_manager)
-        self.configure_security_group(group_id)
+        if not sg_exists:
+            self.configure_security_group(sec_group_name)
         return instance['Instances'][0]['InstanceId']
 
-    def create_security_group(self):
+    def create_security_group(self, sec_group_name):
         '''
         Create New security group for instance
         '''
-        response = self.client.create_security_group(
-            Description='Default security group for {0}'.format(self.name),
-            GroupName='{0}_sg_group'.format(self.name)
-        )
-        return response['GroupId']
+        sg_exists = False
+        try:
+            _ = self.client.create_security_group(
+                Description='Default security group for {0}'.format(self.name),
+                GroupName=sec_group_name
+            )
+        except botocore.exceptions.ClientError:
+            sg_exists = True
+            self.logger.log.warning('Creation failed, {0} already exists...'.format(sec_group_name))
+        return sg_exists
 
-    def configure_security_group(self, group_id):
+    def configure_security_group(self, group_name):
         '''
         Configure security group for defined ports
         '''
         for port in self.config.ports:
-            self.client.authorize_security_group_ingress(GroupId=group_id,
+            self.client.authorize_security_group_ingress(GroupName=group_name,
                                                          IpProtocol="tcp",
                                                          CidrIp="0.0.0.0/0",
                                                          FromPort=int(port),

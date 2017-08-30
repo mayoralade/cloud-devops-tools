@@ -12,7 +12,7 @@ from .instance import Instance
 from ... import helper
 from ...status import Status
 
-TIMEOUT = 60
+TIMEOUT = 120
 INTERVAL = 5
 
 
