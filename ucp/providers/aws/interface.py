@@ -5,6 +5,7 @@ import os
 import boto3
 import botocore.exceptions
 from .resources.ami_map import AMIMap
+from ...devoptools.tools import DevOpsTools
 
 
 class BotoInterface(object):
@@ -151,8 +152,5 @@ class BotoInterface(object):
         Get the services to be configured on machine
         and pass as userdata for amazon instance creation
         '''
-        config_manager = getattr(self.config, self.config.platform)
-        service_list = ' '.join(self.config.services)
-        config_manager = config_manager.replace('service_config_list',
-                                                service_list)
-        return config_manager
+        config_manager = DevOpsTools(self.config.services)
+        return config_manager.aggregate_config
