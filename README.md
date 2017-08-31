@@ -196,7 +196,7 @@ $ dtp list  tools
 
 ## Maintainers
 
-[@mayoralade](https://github.com/mayoralade).
+[@mayoralade](https://github.com/mayoralade)
 [@stelligent](https://github.com/stelligent).
 
 ## Contribute
