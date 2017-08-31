@@ -28,7 +28,7 @@ def copy_config_template(resource_path):
     user_template_file = os.path.join(resource_path, 'sample_configuration.cfg')
     if os.path.isfile(user_template_file):
         msg = '''
-        Create a default configuration file to use <ucp_default.cfg> for instances
+        Create a default configuration file to use <dtp_default.cfg> for instances
         without any configuration file. <sample_configuration.cfg> already exists in
         your home directory.
         '''
@@ -49,7 +49,7 @@ def load_config_files(given_config, default_config):
     else:
         msg = ''''A default template file <sample_configuration.cfg> has been
         created in your home dir, please modify this file, rename it to
-        <ucp_default.cfg> and all other instances not having a config file tied to
+        <dtp_default.cfg> and all other instances not having a config file tied to
         it will use the provider specified under the [resource] section'''
         copy_config_template(resource_path)
         sys.exit('ERROR: {0}'.format(msg))
@@ -58,7 +58,7 @@ def define_config_attributes(resource_name):
     '''
     Define resource configuration attributes
     '''
-    config_file = load_config_files(resource_name, 'ucp_default')
+    config_file = load_config_files(resource_name, 'dtp_default')
     config_data = helper.load_config_file(config_file)
     provider = config_data.get('resource', 'provider')
     return helper.configure_section_attributes(['resource', provider, 'services'],
@@ -76,7 +76,6 @@ def run_command(args):
     '''
     Run requested action
     '''
-    config = define_config_attributes(args.name)
     if args.action == 'list':
         if args.name == 'tools':
             DevOpsTools.list_tools()
@@ -85,4 +84,5 @@ def run_command(args):
         else:
             sys.exit('ERROR: please use "list" with <tools|instances|vms|boxes>')
     else:
+        config = define_config_attributes(args.name)
         manage_resource(args.name, config, args.action, args.debug)

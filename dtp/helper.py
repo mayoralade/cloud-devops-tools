@@ -21,9 +21,9 @@ def verify_status_dir():
     Verify status dir exists, else create it
     '''
     if sys.platform == 'win32':
-        root_path = r'C:\Users\Public\ucp\\'
+        root_path = r'C:\Users\Public\dtp\\'
     else:
-        root_path = '/tmp/ucp/'
+        root_path = '/tmp/dtp/'
     if not os.path.exists(root_path):
         os.makedirs(root_path)
     return root_path

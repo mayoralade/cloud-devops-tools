@@ -1,4 +1,4 @@
 #!/usr/bin/env python
 
-import ucp
-ucp.main()
+import dtp
+dtp.main()

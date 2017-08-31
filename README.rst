@@ -1,6 +1,6 @@
 Sample Module Repository
 ========================
 
-This is a unified service provider.
+This is a devops tool provisioner.
 
-`Learn more <http://ucp.io>`_.
+`Learn more <http://dtp.io>`_.

@@ -9,7 +9,7 @@ def main():
     '''
     Main Program
     '''
-    parser = ArgumentParser(prog='ucp', usage='%(prog)s <action> <name>')
+    parser = ArgumentParser(prog='dtp', usage='%(prog)s <action> <name>')
     parser.add_argument('action', choices=['create',
                                            'destroy',
                                            'halt',
