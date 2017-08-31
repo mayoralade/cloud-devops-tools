@@ -34,6 +34,9 @@ class AWSProvider(Provider):
         '''
         Instance creation interface
         '''
+        if self.instance:
+            self.logger.log.info('Instance %s already exists, exiting...', self.name)
+            sys.exit(0)
         self.logger.log.info('Creating Instance %s', self.name)
         instance_id = self.interface.create_instance()
         self.poll_for_state('running', instance_id)
@@ -99,6 +102,20 @@ class AWSProvider(Provider):
             self.logger.log.info('%s is %s', self.name, status)
         return status
 
+    def pull(self):
+        '''
+        Pull files from instance to local machine
+        '''
+        self.verify()
+        self.interface.sync_data('pull', self.instance.PublicIpAddress)
+
+    def push(self):
+        '''
+        Push file from local machine to instance
+        '''
+        self.verify()
+        self.interface.sync_data('push', self.instance.PublicIpAddress)
+
     @staticmethod
     def update_configuration(config):
         '''
@@ -108,12 +125,6 @@ class AWSProvider(Provider):
                                             'machine.cfg')
         provider_config = helper.load_config_file(provider_config_path)
         return helper.configure_section_attributes(['default'], provider_config, config)
-
-    def service_configuration(self):
-        '''
-        Retrieve actual service configuration to pass at instance creation
-        '''
-        return self.config
 
     def update(self):
         '''

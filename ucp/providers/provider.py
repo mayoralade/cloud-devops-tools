@@ -20,16 +20,9 @@ class Provider(object):
         pass
 
     @abstractmethod
-    def start(self):
+    def destroy(self):
         '''
-        Instance start up and login interface
-        '''
-        pass
-
-    @abstractmethod
-    def login(self):
-        '''
-        Instance login interface
+        Instance deletion interface
         '''
         pass
 
@@ -41,9 +34,23 @@ class Provider(object):
         pass
 
     @abstractmethod
-    def destroy(self):
+    def info(self):
         '''
-        Instance deletion interface
+        Instance information interface
+        '''
+        pass
+
+    @abstractmethod
+    def login(self):
+        '''
+        Instance login interface
+        '''
+        pass
+
+    @abstractmethod
+    def start(self):
+        '''
+        Instance start up and login interface
         '''
         pass
 
@@ -55,8 +62,15 @@ class Provider(object):
         pass
 
     @abstractmethod
-    def service_configuration(self):
+    def pull(self):
         '''
-        Service Configuration Interface
+        Pull files from instance to local machine
+        '''
+        pass
+
+    @abstractmethod
+    def push(self):
+        '''
+        Push file from local machine to instance
         '''
         pass

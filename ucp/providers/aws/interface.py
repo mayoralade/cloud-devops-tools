@@ -2,6 +2,7 @@
     AWS Boto3 interface abstraction for loose coupling
 '''
 import os
+import sys
 import boto3
 import botocore.exceptions
 from .resources.ami_map import AMIMap
@@ -150,6 +151,33 @@ class BotoInterface(object):
                 ip_address))
         else:
             self.logger.log.error('Only Linux has been implemented for AWS')
+
+    def sync_data(self, action, ip_address):
+        '''
+        Handle data sync from and to instance
+        '''
+        self.logger.log.info('  Sync starting...')
+        for item in self.config.local_sync_directory:
+            if self.config.platform == 'linux':
+                os.system(self.construct_rsync_command(action, item, ip_address))
+            else:
+                self.logger.log.error('Only Linux has been implemented for AWS')
+        self.logger.log.info('  Sync complete')
+
+    def construct_rsync_command(self, action, directory, ip_address):
+        '''
+        Construct rsync command based on push or pull
+        '''
+        if action == 'pull':
+            return 'rsync -ae "ssh -i {0}" ec2-user@{1}:/home/ec2-user/{2}/ {3}'\
+                    .format(self.config.key_file_location, ip_address,
+                            os.path.basename(directory), directory)
+        elif action == 'push':
+            return 'rsync -ae "ssh -i {0}" {1} ec2-user@{2}:/home/ec2-user'\
+                    .format(self.config.key_file_location, directory, ip_address)
+        else:
+            self.logger.log.error('Unknown sync command {0} given, exiting...'.format(action))
+            sys.exit(0)
 
     def get_service_config(self):
         '''

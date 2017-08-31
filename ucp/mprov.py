@@ -16,6 +16,8 @@ def main():
                                            'info',
                                            'list',
                                            'login',
+                                           'pull',
+                                           'push',
                                            'start',
                                            'status'],
                         help='action required')
