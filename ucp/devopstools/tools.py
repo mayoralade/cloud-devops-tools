@@ -19,6 +19,8 @@ class DevOpsTools(object):
         '''
         for tool in self.tools:
             config = self.tool_config(tool)
+            if not config:
+                continue
             self.aggregate_config += config
             if not config.endswith('\n'):
                 self.aggregate_config += '\n'
@@ -34,14 +36,15 @@ class DevOpsTools(object):
             with open(config_file) as cfgfn:
                 return cfgfn.read()
         except IOError:
-            self.logger.log.error('No file named {0} exists'.format(config_file))
+            self.logger.log.error('{0} not a recognized tool, skipping...'.format(tool))
+            return
 
     @staticmethod
     def list_tools():
         '''
         List available tools
         '''
-        print 'Available Services:'
+        print 'Available Tools:'
         for tool in os.listdir(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                             'tools_repo')):
             print '  {0}'.format(os.path.splitext(tool)[0])

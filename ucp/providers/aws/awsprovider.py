@@ -66,7 +66,7 @@ class AWSProvider(Provider):
         Print Instance info
         '''
         self.verify()
-        for key, value in self.instance.iteritems():
+        for key, value in self.instance.__dict__.iteritems():
             print '  {0}: {1}'.format(key, value)
 
     def login(self):
