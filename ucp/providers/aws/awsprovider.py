@@ -41,32 +41,6 @@ class AWSProvider(Provider):
         self.instance = Instance(instance_data, self.config.attribute_file, self.name)
         Status.create_status(self.instance.info, self.status_file)
 
-    def start(self):
-        '''
-        Instance start up and login interface
-        '''
-        self.verify()
-        self.logger.log.info('Starting Instance %s', self.name)
-        self.interface.start_instance(self.instance.InstanceId)
-        self.update_status_file('running')
-
-    def login(self):
-        '''
-        Instance start up and login interface
-        '''
-        self.verify()
-        self.logger.log.info('Logging into Instance %s', self.name)
-        self.interface.login_to_machine(self.instance.PublicIpAddress)
-
-    def halt(self):
-        '''
-        Instance halt interface
-        '''
-        self.verify()
-        self.logger.log.info('Stopping Instance %s', self.name)
-        self.interface.stop_instance(self.instance.InstanceId)
-        self.update_status_file('stopped')
-
     def destroy(self):
         '''
         Instance deletion interface
@@ -77,6 +51,40 @@ class AWSProvider(Provider):
         self.update_status_file('terminated')
         self.interface.delete_security_group(self.instance.SecurityGroups[0]['GroupId'])
         Status.clear_status(self.status_file)
+
+    def halt(self):
+        '''
+        Instance halt interface
+        '''
+        self.verify()
+        self.logger.log.info('Stopping Instance %s', self.name)
+        self.interface.stop_instance(self.instance.InstanceId)
+        self.update_status_file('stopped')
+
+    def info(self):
+        '''
+        Print Instance info
+        '''
+        self.verify()
+        for key, value in self.instance.iteritems():
+            print '  {0}: {1}'.format(key, value)
+
+    def login(self):
+        '''
+        Instance start up and login interface
+        '''
+        self.verify()
+        self.logger.log.info('Logging into Instance %s', self.name)
+        self.interface.login_to_machine(self.instance.PublicIpAddress)
+
+    def start(self):
+        '''
+        Instance start up and login interface
+        '''
+        self.verify()
+        self.logger.log.info('Starting Instance %s', self.name)
+        self.interface.start_instance(self.instance.InstanceId)
+        self.update_status_file('running')
 
     def status(self, instance_id=None, repeat=True):
         '''

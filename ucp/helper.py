@@ -2,6 +2,8 @@
 Library of Helper functions
 '''
 import sys
+import os
+import re
 import ConfigParser
 from flatten_dict import flatten
 
@@ -14,13 +16,24 @@ def underscore_reducer(key1, key2):
         return key2
     return key1 + "_" + key2
 
+def verify_status_dir():
+    '''
+    Verify status dir exists, else create it
+    '''
+    if sys.platform == 'win32':
+        root_path = r'C:\Users\Public\ucp\\'
+    else:
+        root_path = '/tmp/ucp/'
+    if not os.path.exists(root_path):
+        os.makedirs(root_path)
+    return root_path
+
 def construct_status_file_name(provider, instance_name):
     '''
     Construct hidden tmp file to hold instance status
     '''
-    if sys.platform == 'win32':
-        return r'C:\Users\Public\.{0}_{1}.tmp'.format(provider, instance_name)
-    return '/tmp/.{0}_{1}.tmp'.format(provider, instance_name)
+    root_path = verify_status_dir()
+    return r'{0}.{1}_{2}.tmp'.format(root_path, provider, instance_name)
 
 def create_attribute_from_dict(class_name, class_dict):
     '''
@@ -51,7 +64,10 @@ def configure_section_attributes(sections, config_data, config):
     '''
     for section in sections:
         for name, value in config_data.items(section):
-            if ',' in value:
-                value = value.split(',')
+            check_for_list = re.match(r'\[(.*)\]', value)
+            if check_for_list:
+                value = check_for_list.group(1).split(',')
+                if not value:
+                    continue
             setattr(config, name, value)
     return config

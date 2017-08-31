@@ -5,9 +5,11 @@ Main USP Interface
 import os
 import sys
 from shutil import copy2
-from argparse import Namespace, ArgumentParser
+from argparse import Namespace
 from . import helper
 from .providers.provisioner import Provisioner
+from .devopstools.tools import DevOpsTools
+from .status import Status
 
 
 def construct_config_path(config_path, config_name):
@@ -70,24 +72,17 @@ def manage_resource(name, config, action, log_level):
     provisioner = Provisioner(name, config, action, log_level)
     provisioner.run_command_by_provider()
 
-def run_command(name, action, log_level):
+def run_command(args):
     '''
     Run requested action
     '''
-    config = define_config_attributes(name)
-    manage_resource(name, config, action, log_level)
-
-def main():
-    '''
-    Main Program
-    '''
-    parser = ArgumentParser(prog='ucp', usage='%(prog)s <action> <name>')
-    parser.add_argument('action', choices=['create', 'start', 'login', 'halt', 'destroy', 'status'],
-                        help='action required')
-    parser.add_argument('name', help='Name of resource to create, matching config file')
-    parser.add_argument('--debug', '-d', '-D', action='store_true', help='Set log level to debug')
-    args = parser.parse_args()
-    run_command(args.name, args.action, args.debug)
-
-if __name__ == '__main__':
-    main()
+    config = define_config_attributes(args.name)
+    if args.action == 'list':
+        if args.name == 'tools':
+            DevOpsTools.list_tools()
+        elif args.name in ('instances', 'vms', 'boxes'):
+            Status.print_all_status()
+        else:
+            sys.exit('ERROR: please use "list" with <tools|instances|vms|boxes>')
+    else:
+        manage_resource(args.name, config, args.action, args.debug)

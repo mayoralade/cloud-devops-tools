@@ -3,6 +3,8 @@ Manage instance status
 '''
 import json
 import os
+import sys
+from .helper import verify_status_dir
 
 
 class Status(object):
@@ -42,3 +44,16 @@ class Status(object):
         '''
         if os.path.isfile(status_file):
             os.remove(status_file)
+
+    @staticmethod
+    def print_all_status():
+        '''
+        Read of status file and print instance name and status
+        '''
+        status_dir = verify_status_dir()
+        if not os.listdir(status_dir):
+            sys.exit('  You currently have no instance created')
+        for item in os.listdir(status_dir):
+            with open(os.path.join(status_dir, item)) as sfile:
+                status = json.load(sfile)
+            print '  {0}:  {1}'.format(status['Name'], status['State_Name'])

@@ -5,7 +5,7 @@ import os
 import boto3
 import botocore.exceptions
 from .resources.ami_map import AMIMap
-from ...devoptools.tools import DevOpsTools
+from ...devopstools.tools import DevOpsTools
 
 
 class BotoInterface(object):
@@ -61,6 +61,7 @@ class BotoInterface(object):
                                              UserData=config_manager)
         if not sg_exists:
             self.configure_security_group(sec_group_name)
+        self.logger.log.info('Instance creation complete, now starting...')
         return instance['Instances'][0]['InstanceId']
 
     def create_security_group(self, sec_group_name):
@@ -83,11 +84,14 @@ class BotoInterface(object):
         Configure security group for defined ports
         '''
         for port in self.config.ports:
-            self.client.authorize_security_group_ingress(GroupName=group_name,
-                                                         IpProtocol="tcp",
-                                                         CidrIp="0.0.0.0/0",
-                                                         FromPort=int(port),
-                                                         ToPort=int(port))
+            try:
+                self.client.authorize_security_group_ingress(GroupName=group_name,
+                                                             IpProtocol="tcp",
+                                                             CidrIp="0.0.0.0/0",
+                                                             FromPort=int(port),
+                                                             ToPort=int(port))
+            except botocore.exceptions.ClientError:
+                self.logger.log.warning('Failed to authorize ingress on for port: {0}'.format(port))
 
     def delete_security_group(self, group_id):
         '''
@@ -152,5 +156,5 @@ class BotoInterface(object):
         Get the services to be configured on machine
         and pass as userdata for amazon instance creation
         '''
-        config_manager = DevOpsTools(self.config.services)
-        return config_manager.aggregate_config
+        config_manager = DevOpsTools(self.config.services, self.logger)
+        return config_manager.aggregate_configs()

@@ -1,1 +1,1 @@
-from .core import main
+from .mprov import main
