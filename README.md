@@ -2,8 +2,6 @@
 
 [![standard-readme compliant](https://img.shields.io/badge/devops-cloud%20provisioning-green.svg)](https://github.com/stelligent/dtp)
 
-https://img.shields.io/badge/devops-cloud%20provisioning-green.svg
-
 > Introducing a new way of using DevOps tools in the cloud
 
 DTP is a tool that simplifies provisioning a virtual machine using any of the following virtualization providers: AWS, GCE, Azure, VirtualBox (At the moment, only AWS has been implemented) and also automatically install and configure one or more standard DevOps tools and also sync files between your local machine and the vm.
