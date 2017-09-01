@@ -89,7 +89,6 @@ First create a default configuration file to use for provisioning new VMS when a
 ### [Sample configuration file](sample/sample_configuration.cfg)
 
 ```sh
-$ standard-readme-spec
 [resource]
 provider = <aws|azure|docker|gce|vagrant>
 
