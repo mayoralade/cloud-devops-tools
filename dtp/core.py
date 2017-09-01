@@ -16,7 +16,6 @@ def construct_config_path(config_path, config_name):
     '''
     Construct config file path from path and config name
     '''
-    os.path.join(config_path, config_name)
     return '{0}.cfg'.format(os.path.join(config_path, config_name))
 
 def copy_config_template(resource_path):

@@ -3,46 +3,89 @@ import mock
 import unittest
 import sys
 
+#global core
+from ... import core
 
 class CoreTest(unittest.TestCase):
     def setUp(self):
-        global osMock, shutilMock, argparseMock, helperMock, providersMock, devopstoolsMock, statusMock
-        osMock = mock.MagicMock()
-        shutilMock = mock.MagicMock()
-        argparseMock = mock.MagicMock()
-        helperMock = mock.MagicMock()
-        providersMock = mock.MagicMock()
-        devopstoolsMock = mock.MagicMock()
-        statusMock = mock.MagicMock()
+        global osPathMock, copy2Mock
+        osPathMock = mock.MagicMock()
+        copy2Mock = mock.MagicMock()
         self.patcher = mock.patch.dict('sys.modules',
-                                       {'os': osMock,
-                                        'shutil': shutilMock,
-                                        'argparse': argparseMock,
-                                        'helper': helperMock,
-                                        'provider': providersMock,
-                                        'devopstools': devopstoolsMock,
-                                        'status': statusMock})
+                                       {'os': mock.MagicMock(),
+                                        'shutil': mock.MagicMock(),
+                                        'argparse': mock.MagicMock()})
         self.patcher.start()
 
+        global core
         from ... import core
+        self.core = core
+        self.core.os.path = osPathMock
+        self.core.copy2 = copy2Mock
+        self.mock = mock.MagicMock()
 
     def tearDown(self):
         self.patcher.stop()
 
     def test_construct_config_path(self):
-        pass
+        osPathMock.join.return_value = '/tmp/dude'
+        config_path = core.construct_config_path('/tmp', 'junk')
+        self.assertEqual(config_path, '/tmp/dude.cfg')
 
-    def test_copy_config_template(self):
-        pass
+    def test_copy_config_template_user_template_exists(self):
+        osPathMock.isfile.return_value = True
+        with self.assertRaises(SystemExit) as _:
+            core.copy_config_template('/tmp/junk')
 
-    def test_load_config_files(self):
-        pass
+    def test_copy_config_template_user_template_not_exists(self):
+        osPathMock.join.return_value = '/tmp/junk_src'
+        osPathMock.isfile.return_value = False
+        copy2Mock.return_value = None
+        self.core.copy_config_template('/tmp/junk')
+        copy2Mock.assert_called_once_with('/tmp/junk_src', '/tmp/junk')
+
+    def test_load_config_files_config_exists(self):
+        self.core.construct_config_path = mock.MagicMock(return_value=True)
+        self.core.copy_config_template = mock.MagicMock(return_value=True)
+        osPathMock.isfile.return_value = True
+        self.assertTrue(self.core.load_config_files('given', 'default'))
+
+    def test_load_config_files_no_config_exists(self):
+        self.core.construct_config_path = mock.MagicMock()
+        self.core.copy_config_template = mock.MagicMock()
+        osPathMock.isfile.return_value = False
+        with self.assertRaises(SystemExit) as _:
+            self.core.load_config_files('given', 'default')
 
     def test_define_config_attributes(self):
-        pass
+        self.tmp_config = self.core.load_config_files
+        self.core.load_config_files = mock.MagicMock()
+        self.core.Namespace = mock.MagicMock(return_value='works')
+        self.core.helper.load_config_file = mock.MagicMock(return_value=self.mock)
+        self.core.helper.configure_section_attributes = mock.MagicMock(return_value=None)
+        self.core.helper.load_config_file.return_value.get.return_value = True
+        self.core.define_config_attributes('dummy')
+        self.core.helper.configure_section_attributes.assert_called_once_with(
+            ['resource', True, 'services'], self.mock, 'works')
+        self.core.load_config_files = self.tmp_config
 
     def test_manage_resource(self):
-        pass
+        self.core.Provisioner = mock.MagicMock()
+        self.core.manage_resource('a', 'b', 'c', 'd')
+        self.core.Provisioner.return_value.run_command_by_provider.assert_called_once_with()
 
-    def test_run_command(self):
-        pass
+    def test_run_command_list_tools(self):
+        self.core.DevOpsTools.list_tools = mock.MagicMock()
+        args = mock.MagicMock(action='list')
+        prop = mock.PropertyMock(return_value='tools')
+        type(args).name = prop
+        self.core.run_command(args)
+        self.core.DevOpsTools.list_tools.assert_called_once_with()
+
+    def test_run_command_list_vms(self):
+        self.core.Status.print_all_status = mock.MagicMock()
+        args = mock.MagicMock(action='list')
+        prop = mock.PropertyMock(return_value='vms')
+        type(args).name = prop
+        self.core.run_command(args)
+        self.core.Status.print_all_status.assert_called_once_with()

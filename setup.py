@@ -12,7 +12,7 @@ with open('LICENSE') as f:
 setup(
     name='dtp',
     version='0.1.0',
-    description='Unified Cloud Provider',
+    description='DevOps Tools Provisioner',
     long_description=readme,
     author='Mayowa Aladeojebi',
     author_email='mayowa.aladeojebi@stelligent.com',
