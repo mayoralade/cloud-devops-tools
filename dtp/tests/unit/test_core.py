@@ -3,8 +3,6 @@ import mock
 import unittest
 import sys
 
-#global core
-from ... import core
 
 class CoreTest(unittest.TestCase):
     def setUp(self):
@@ -19,23 +17,26 @@ class CoreTest(unittest.TestCase):
 
         global core
         from ... import core
+        self.patcher2 = mock.patch('dtp.core.Status', mock.MagicMock())
         self.core = core
         self.core.os.path = osPathMock
         self.core.copy2 = copy2Mock
         self.mock = mock.MagicMock()
+        self.patcher2.start()
 
     def tearDown(self):
         self.patcher.stop()
+        self.patcher2.stop()
 
     def test_construct_config_path(self):
         osPathMock.join.return_value = '/tmp/dude'
-        config_path = core.construct_config_path('/tmp', 'junk')
+        config_path = self.core.construct_config_path('/tmp', 'junk')
         self.assertEqual(config_path, '/tmp/dude.cfg')
 
     def test_copy_config_template_user_template_exists(self):
         osPathMock.isfile.return_value = True
         with self.assertRaises(SystemExit) as _:
-            core.copy_config_template('/tmp/junk')
+            self.core.copy_config_template('/tmp/junk')
 
     def test_copy_config_template_user_template_not_exists(self):
         osPathMock.join.return_value = '/tmp/junk_src'
@@ -59,6 +60,7 @@ class CoreTest(unittest.TestCase):
 
     def test_define_config_attributes(self):
         self.tmp_config = self.core.load_config_files
+        self.tmp_helper = self.core.helper.configure_section_attributes
         self.core.load_config_files = mock.MagicMock()
         self.core.Namespace = mock.MagicMock(return_value='works')
         self.core.helper.load_config_file = mock.MagicMock(return_value=self.mock)
@@ -68,6 +70,7 @@ class CoreTest(unittest.TestCase):
         self.core.helper.configure_section_attributes.assert_called_once_with(
             ['resource', True, 'services'], self.mock, 'works')
         self.core.load_config_files = self.tmp_config
+        self.core.helper.configure_section_attributes = self.tmp_helper
 
     def test_manage_resource(self):
         self.core.Provisioner = mock.MagicMock()
@@ -83,7 +86,6 @@ class CoreTest(unittest.TestCase):
         self.core.DevOpsTools.list_tools.assert_called_once_with()
 
     def test_run_command_list_vms(self):
-        self.core.Status.print_all_status = mock.MagicMock()
         args = mock.MagicMock(action='list')
         prop = mock.PropertyMock(return_value='vms')
         type(args).name = prop
