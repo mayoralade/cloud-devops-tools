@@ -18,15 +18,18 @@ class CoreTest(unittest.TestCase):
         global core
         from ... import core
         self.patcher2 = mock.patch('dtp.core.Status', mock.MagicMock())
+        self.patcher3 = mock.patch('dtp.core.DevOpsTools', mock.MagicMock())
         self.core = core
         self.core.os.path = osPathMock
         self.core.copy2 = copy2Mock
         self.mock = mock.MagicMock()
         self.patcher2.start()
+        self.patcher3.start()
 
     def tearDown(self):
         self.patcher.stop()
         self.patcher2.stop()
+        self.patcher3.stop()
 
     def test_construct_config_path(self):
         osPathMock.join.return_value = '/tmp/dude'
@@ -78,7 +81,6 @@ class CoreTest(unittest.TestCase):
         self.core.Provisioner.return_value.run_command_by_provider.assert_called_once_with()
 
     def test_run_command_list_tools(self):
-        self.core.DevOpsTools.list_tools = mock.MagicMock()
         args = mock.MagicMock(action='list')
         prop = mock.PropertyMock(return_value='tools')
         type(args).name = prop

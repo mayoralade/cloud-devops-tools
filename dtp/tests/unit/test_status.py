@@ -2,7 +2,6 @@
 import mock
 import unittest
 import sys
-from StringIO import StringIO
 
 
 class StatusTest(unittest.TestCase):
@@ -14,25 +13,25 @@ class StatusTest(unittest.TestCase):
         openMock = mock.MagicMock()
         vstatDirMock = mock.MagicMock()
         osListDirMock = mock.MagicMock()
-        self.patcher = mock.patch.dict('sys.modules',
+        self.patcher1 = mock.patch.dict('sys.modules',
                                        {'os': mock.MagicMock(),
                                         'json': mock.MagicMock(),
                                         'open': mock.MagicMock(),
                                         'helper': mock.MagicMock()})
-        self.patcher.start()
+        self.patcher2 = mock.patch('dtp.status.verify_status_dir', mock.MagicMock())
+        self.patcher1.start()
+        self.patcher2.start()
 
         from ... import status
-        self.patcher2 = mock.patch('dtp.status.verify_status_dir', mock.MagicMock())
         self.status = status
         self.status.open = openMock
         self.status.json = jsonMock
         self.status.os.path = osMockPath
         self.status.os.remove = osMockRemove
         self.status.os.listdir = osListDirMock
-        self.patcher2.start()
 
     def tearDown(self):
-        self.patcher.stop()
+        self.patcher1.stop()
         self.patcher2.stop()
 
     def test_create_status(self):

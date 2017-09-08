@@ -37,7 +37,6 @@ class DevOpsTools(object):
                 return cfgfn.read()
         except IOError:
             self.logger.log.error('{0} not a recognized tool, skipping...'.format(tool))
-            return
 
     @staticmethod
     def list_tools():
