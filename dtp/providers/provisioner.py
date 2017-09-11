@@ -22,7 +22,6 @@ class Provisioner(object):
         self.action = action
         self.providers = None
         self.logger = Logger(log_level)
-        self.update_providers()
 
     def verify_provider(self):
         """
@@ -36,12 +35,13 @@ class Provisioner(object):
         """
             call the provider given with config provided
         """
+        self.update_providers()
         self.verify_provider()
         provider_name = self.providers[self.config.provider]
         module_name = '..{0}.{1}'.format(self.config.provider,
                                          provider_name.lower())
         module = import_module(module_name, __name__)
-        provider = getattr(module, self.providers[self.config.provider])
+        provider = getattr(module, provider_name)
         provider = provider(self.name, self.config, self.logger)
         action = getattr(provider, self.action)
         action()

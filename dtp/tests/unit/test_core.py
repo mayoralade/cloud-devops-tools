@@ -9,27 +9,30 @@ class CoreTest(unittest.TestCase):
         global osPathMock, copy2Mock
         osPathMock = mock.MagicMock()
         copy2Mock = mock.MagicMock()
-        self.patcher = mock.patch.dict('sys.modules',
+        self.patcher1 = mock.patch.dict('sys.modules',
                                        {'os': mock.MagicMock(),
                                         'shutil': mock.MagicMock(),
                                         'argparse': mock.MagicMock()})
-        self.patcher.start()
+        self.patcher1.start()
 
         global core
         from ... import core
         self.patcher2 = mock.patch('dtp.core.Status', mock.MagicMock())
         self.patcher3 = mock.patch('dtp.core.DevOpsTools', mock.MagicMock())
+        self.patcher4 = mock.patch('dtp.core.Provisioner', mock.MagicMock())
         self.core = core
         self.core.os.path = osPathMock
         self.core.copy2 = copy2Mock
         self.mock = mock.MagicMock()
         self.patcher2.start()
         self.patcher3.start()
+        self.patcher4.start()
 
     def tearDown(self):
-        self.patcher.stop()
+        self.patcher1.stop()
         self.patcher2.stop()
         self.patcher3.stop()
+        self.patcher4.stop()
 
     def test_construct_config_path(self):
         osPathMock.join.return_value = '/tmp/dude'
@@ -76,7 +79,6 @@ class CoreTest(unittest.TestCase):
         self.core.helper.configure_section_attributes = self.tmp_helper
 
     def test_manage_resource(self):
-        self.core.Provisioner = mock.MagicMock()
         self.core.manage_resource('a', 'b', 'c', 'd')
         self.core.Provisioner.return_value.run_command_by_provider.assert_called_once_with()
 
