@@ -24,7 +24,6 @@ class TestAWSProvider(unittest.TestCase):
         self.patcher2 = mock.patch('dtp.providers.aws.awsprovider.helper',
             mock.MagicMock())
 
-        #from ...providers.aws import awsprovider
         from ...providers.aws import awsprovider
         self.aws = awsprovider
         self.patcher2.start()
