@@ -15,7 +15,7 @@ class AMIMap(object):
         self.platform = platform
         self.os_name = os_name
         self.ami_file = ami_file
-        self.ami_map = self.ami_mappings()
+        self.ami_map = None
 
     def ami_mappings(self):
         '''
@@ -29,4 +29,5 @@ class AMIMap(object):
         '''
         Return AMI Image if in map
         '''
+        self.ami_map = self.ami_mappings()
         return self.ami_map.get(self.platform).get(self.os_name)
