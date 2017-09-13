@@ -3,7 +3,7 @@ import unittest
 import sys
 
 
-class TestInstance(unittest.TestCase):
+class TestAWSInstance(unittest.TestCase):
     def setUp(self):
         global selfMock
         selfMock = mock.MagicMock()
