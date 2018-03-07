@@ -195,15 +195,12 @@ $ dtp list  tools
 
 ## Maintainers
 
-[@mayoralade](https://github.com/mayoralade)
-[@stelligent](https://github.com/stelligent).
+[@mayoralade](https://github.com/mayoralade).
 
 ## Contribute
-
-Feel free to dive in! [Open an issue](https://github.com/stelligent/dtp/issues).
 
 DTP follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.
 
 ## License
 
-[MIT](LICENSE) © Stelligent
+[MIT](LICENSE)
